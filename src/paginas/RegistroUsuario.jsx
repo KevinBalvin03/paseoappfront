@@ -18,6 +18,7 @@ function RegistroUsuario() {
     rol: '',
   })
   const [errores, setErrores] = useState({})
+  const [errorApi, setErrorApi] = useState('')
 
   const manejarCambio = (evento) => {
     const { name, value } = evento.target
@@ -50,17 +51,23 @@ function RegistroUsuario() {
 
     //valido formulario
     const nuevosErrores=validar()
-    if(Object.key(nuevosErrores).length>0){
+    setErrores(nuevosErrores)
+    if(Object.keys(nuevosErrores).length>0){
       return null
     }
 
     //Todo ok voy a a intentar enviar los datos al API
+    setErrorApi('')
     try{
       const usuarioGuardado = await guardarUsuario(usuario)
       navegar('/home')
 
-    }catch{
-      setErrores("No fue posible registrar el usuario") //COmo hago para mostrar el error que manda el API
+    }catch(error){
+      //Si el API respondio, el mensaje viene en error.response.data
+      const mensaje = error.response?.data?.mensaje
+                   ?? error.response?.data?.message
+                   ?? 'No fue posible registrar el usuario'
+      setErrorApi(mensaje)
     }
 
 
@@ -77,6 +84,8 @@ function RegistroUsuario() {
     >
       <h2 className="fw-bold mb-1">Crear cuenta</h2>
       <p className="text-muted mb-4">Regístrate para empezar a reservar.</p>
+
+      {errorApi && <div className="alert alert-danger">{errorApi}</div>}
 
       <form onSubmit={manejarEnvio} noValidate>
         <div className="mb-3">
